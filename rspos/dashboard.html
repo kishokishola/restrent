@@ -1,0 +1,193 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>dashboard — Static demo</title></head><body>
+<div class="main-content">
+
+
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon orange">💰</div>
+    <div class="stat-info">
+      <div class="stat-value" data-stat="revenue">Rs </div>
+      <div class="stat-label">Today Revenue</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">🛒</div>
+    <div class="stat-info">
+      <div class="stat-value" data-stat="orders"></div>
+      <div class="stat-label">Completed Orders</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">⏳</div>
+    <div class="stat-info">
+      <div class="stat-value" data-stat="pending"></div>
+      <div class="stat-label">Pending Orders</div>
+      <div class="stat-change down">Needs attention</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">🪑</div>
+    <div class="stat-info">
+      <div class="stat-value" data-stat="avail_tbl">/</div>
+      <div class="stat-label">Tables Available</div>
+      <div class="stat-change"> occupied</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon ">📦</div>
+    <div class="stat-info">
+      <div class="stat-value" data-stat="low_stock"></div>
+      <div class="stat-label">Low Stock Alerts</div>
+      <div class="stat-change down">Check inventory</div><div class="stat-change up">All stocked</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="gap:20px;margin-bottom:20px;">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="icon">📈</span> Weekly Revenue</div><span class="badge badge-primary">Last 7 Days</span></div>
+    <div class="card-body"><canvas id="revenueChart" height="140"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="icon">🪑</span> Table Overview</div><a href="./tables.html" class="btn btn-ghost btn-sm">View All</a></div>
+    <div class="card-body">
+      <div style="text-align:center;margin-bottom:16px;"><canvas id="tableChart" width="180" height="180" style="max-width:180px;margin:auto;"></canvas></div>
+      <div class="status-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div> Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div> Occupied</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div> Reserved</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header"><div class="card-title"><span class="icon">🛒</span> Recent Orders</div><a href="./orders.html" class="btn btn-outline btn-sm">View All</a></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Order #</th><th>Table</th><th>Cashier</th><th>Status</th><th>Total</th><th>Time</th><th>Action</th></tr></thead>
+      <tbody id="dashOrdersBody">
+        
+          <tr><td colspan="7" class="text-center text-muted" style="padding:30px;">No orders today yet.</td></tr>
+        
+          
+          <tr>
+            <td data-label="Order #"><strong></strong></td>
+            <td data-label="Table"></td>
+            <td data-label="Cashier"></td>
+            <td data-label="Status"><span class="badge "></span></td>
+            <td data-label="Total" class="text-primary fw-bold">Rs </td>
+            <td data-label="Time" class="text-muted fs-sm"></td>
+            <td data-label="Action"><a href="./billing.html?order_id=" class="btn btn-ghost btn-sm">View</a></td>
+          </tr>
+          
+        
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid grid-2" style="gap:20px;margin-bottom:20px;">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="icon">🏆</span> Best Sellers Today</div></div>
+    <div class="card-body p-0">
+      
+      <p class="text-muted text-center" style="padding:30px;">No sales data yet.</p>
+      
+        
+          <div style="padding:12px 22px;">
+            <div class="d-flex justify-between align-center" style="margin-bottom:5px;">
+              <span class="fw-bold" style="font-size:0.88rem;"></span>
+              <span class="text-primary fw-bold"> sold</span>
+            </div>
+            <div class="progress"><div class="progress-bar" style="width:%"></div></div>
+          </div>
+        
+      
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="icon">⚠️</span> Low Stock Alerts</div><a href="./inventory.html" class="btn btn-ghost btn-sm">Manage</a></div>
+    <div class="card-body p-0">
+      
+      <p class="text-success text-center" style="padding:30px;">All items stocked.</p>
+      
+        
+          <div style="padding:12px 22px;">
+            <div class="d-flex justify-between align-center" style="margin-bottom:5px;">
+              <span class="fw-bold" style="font-size:0.88rem;">🥘 </span>
+              <span class="badge "></span>
+            </div>
+            <div class="stock-level"><div class="stock-bar"><div class="stock-fill %"></div></div><span class="fs-sm text-muted">Ingredient min: </span></div>
+          </div>
+        
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="card">
+  <div class="card-header"><div class="card-title"><span class="icon">⚡</span> Quick Actions</div></div>
+  <div class="card-body">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <a href="./customer_order.html" class="btn btn-primary btn-lg">🛒 New Order</a>
+      <a href="./expenses.html"  class="btn btn-primary btn-lg">💰 Expenses</a>
+      <a href="./tables.html"    class="btn btn-outline btn-lg">🪑 Tables</a>
+      <a href="./kitchen_display.html" class="btn btn-outline btn-lg">👨‍🍳 Kitchen</a>
+      <a href="./billing.html"   class="btn btn-outline btn-lg">💳 Billing</a>
+      <a href="./reports.html"   class="btn btn-outline btn-lg">📊 Reports</a>
+      
+        <a href="./menu.html"      class="btn btn-ghost btn-lg">🍽️ Menu</a>
+        <a href="./inventory.html" class="btn btn-ghost btn-lg">📦 Inventory</a>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+new Chart(document.getElementById('revenueChart'),{type:'bar',data:{labels:,datasets:[{label:'Revenue (Rs)',data:,backgroundColor:'rgba(232,168,56,0.7)',borderColor:'#e8a838',borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9090b0'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#9090b0',callback:v=>'RM'+v},grid:{color:'rgba(255,255,255,0.05)'},beginAtZero:true}}}});
+new Chart(document.getElementById('tableChart'),{type:'doughnut',data:{labels:['Available','Occupied','Reserved'],datasets:[{data:[,,],backgroundColor:['#28a745','#dc3545','#ffc107'],borderColor:'#1e1e30',borderWidth:3}]},options:{cutout:'70%',plugins:{legend:{display:false}}}});
+
+// ── Auto-refresh stats every 30s ──────────────────────────
+function refreshDashStats() {
+  fetch('./ajax_dashboard_stats.html')
+    .then(r => r.json())
+    .then(d => {
+      // Update stat cards by data-stat attribute
+      if (d.revenue    !== undefined) document.querySelectorAll('[data-stat="revenue"]').forEach(el    => el.textContent = 'Rs ' + d.revenue);
+      if (d.orders     !== undefined) document.querySelectorAll('[data-stat="orders"]').forEach(el     => el.textContent = d.orders);
+      if (d.pending    !== undefined) document.querySelectorAll('[data-stat="pending"]').forEach(el    => el.textContent = d.pending);
+      if (d.avail_tbl  !== undefined) document.querySelectorAll('[data-stat="avail_tbl"]').forEach(el  => el.textContent = d.avail_tbl + '/' + d.total_tbl);
+      if (d.low_stock  !== undefined) document.querySelectorAll('[data-stat="low_stock"]').forEach(el  => el.textContent = d.low_stock);
+
+      // Update recent orders table
+      if (d.recentHtml !== undefined) {
+        const tbody = document.getElementById('dashOrdersBody');
+        if (tbody) tbody.innerHTML = d.recentHtml;
+      }
+    }).catch(() => {});
+}
+setInterval(refreshDashStats, 30000);
+</script>
+
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

@@ -1,0 +1,244 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>kitchen — Static demo</title></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Kitchen Orders — RestoPOS</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .kitchen-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .kitchen-col { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .kitchen-col-header {
+      padding:14px 18px;
+      font-weight:700; font-size:0.9rem;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .kitchen-card {
+      margin:10px;
+      background:var(--bg-card2);
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      padding:14px;
+      border-left:4px solid var(--primary);
+      transition:var(--transition);
+    }
+    .kitchen-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+    .kitchen-card.urgent { border-left-color:var(--danger); }
+    .kitchen-card.ready  { border-left-color:var(--success); }
+    .kitchen-card.done   { border-left-color:var(--text-muted); opacity:0.7; }
+    .timer { font-size:0.78rem; font-weight:700; padding:3px 8px; border-radius:10px; }
+    .timer.ok     { background:rgba(40,167,69,0.15); color:var(--success); }
+    .timer.warn   { background:rgba(255,193,7,0.15); color:var(--warning); }
+    .timer.urgent { background:rgba(220,53,69,0.15); color:var(--danger); }
+    .item-list { margin:8px 0; padding-left:14px; }
+    .item-list li { font-size:0.83rem; color:var(--text-muted); padding:2px 0; }
+    .col-pending   .kitchen-col-header { border-top:3px solid var(--warning); }
+    .col-preparing .kitchen-col-header { border-top:3px solid var(--info); }
+    .col-ready     .kitchen-col-header { border-top:3px solid var(--success); }
+    .col-completed .kitchen-col-header { border-top:3px solid var(--text-muted); }
+    @media(max-width:900px) { .kitchen-board { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:560px) { .kitchen-board { grid-template-columns:1fr; } }
+  </style>
+</head>
+
+
+
+<body class="pos-bg">
+
+
+<div class="main-content">
+
+  <div class="page-header">
+   
+    <div class="d-flex gap-2 align-center">
+      <span class="badge badge-warning">⏳  Pending</span>
+      <span class="badge badge-info">🔥  Preparing</span>
+      
+    </div>
+  </div>
+
+  <div class="alert alert-success">✅ </div>
+
+  <!-- Kitchen Board -->
+  <div class="kitchen-board">
+
+    <!-- PENDING -->
+    <div class="kitchen-col col-pending">
+      <div class="kitchen-col-header">
+        <span>🟡 New Orders</span>
+        <span class="badge badge-warning"></span>
+      </div>
+      
+        <div style="padding:30px; text-align:center; color:var(--text-muted); font-size:0.85rem;">No pending orders</div>
+      
+        
+          <div class="kitchen-card ">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <strong style="font-size:0.9rem;"></strong>
+              <span class="timer ">⏱ m</span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">
+              🪑 
+            </div>
+            <ul class="item-list">
+              
+                <li>× </li>
+              
+            </ul>
+            
+              <div style="font-size:0.75rem; color:var(--warning); margin-top:6px;">📝 </div>
+            
+            <form method="POST" style="margin-top:10px;">
+              <input type="hidden" name="action" value="update_status">
+              <input type="hidden" name="order_id" value="">
+              <input type="hidden" name="new_status" value="preparing">
+              <button class="btn btn-info btn-sm btn-block">🔥 Start Preparing</button>
+            </form>
+          </div>
+        
+      
+    </div>
+
+    <!-- PREPARING -->
+    <div class="kitchen-col col-preparing">
+      <div class="kitchen-col-header">
+        <span>🔥 Preparing</span>
+        <span class="badge badge-info"></span>
+      </div>
+      
+        <div style="padding:30px; text-align:center; color:var(--text-muted); font-size:0.85rem;">No orders being prepared</div>
+      
+        
+          <div class="kitchen-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <strong style="font-size:0.9rem;"></strong>
+              <span class="timer ">⏱ m</span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">
+              🪑 
+            </div>
+            <ul class="item-list">
+              
+                <li>× </li>
+              
+            </ul>
+            
+              <div style="font-size:0.75rem; color:var(--warning); margin-top:6px;">📝 </div>
+            
+            <div class="d-flex gap-1" style="margin-top:10px;">
+              <form method="POST" style="flex:1;">
+                <input type="hidden" name="action" value="update_status">
+                <input type="hidden" name="order_id" value="">
+                <input type="hidden" name="new_status" value="ready">
+                <button class="btn btn-success btn-sm btn-block">✅ Mark Ready</button>
+              </form>
+              <form method="POST">
+                <input type="hidden" name="action" value="update_status">
+                <input type="hidden" name="order_id" value="">
+                <input type="hidden" name="new_status" value="pending">
+                <button class="btn btn-ghost btn-sm btn-icon-only" title="Back to pending">↩</button>
+              </form>
+            </div>
+          </div>
+        
+      
+    </div>
+
+    <!-- READY -->
+    <div class="kitchen-col col-ready">
+      <div class="kitchen-col-header">
+        <span>✅ Ready to Serve</span>
+        <span class="badge badge-success"></span>
+      </div>
+      
+        <div style="padding:30px; text-align:center; color:var(--text-muted); font-size:0.85rem;">No orders ready</div>
+      
+        
+          <div class="kitchen-card ready">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <strong style="font-size:0.9rem;"></strong>
+              <span class="badge badge-success">Ready!</span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">
+              🪑 
+            </div>
+            <ul class="item-list">
+              
+                <li>× </li>
+              
+            </ul>
+            <div class="d-flex gap-1" style="margin-top:10px;">
+              <form method="POST" style="flex:1;">
+                <input type="hidden" name="action" value="update_status">
+                <input type="hidden" name="order_id" value="">
+                <input type="hidden" name="new_status" value="completed">
+                <button class="btn btn-primary btn-sm btn-block">🏁 Complete</button>
+              </form>
+              <a href="./billing.html?order_id=" class="btn btn-outline btn-sm">💳</a>
+            </div>
+          </div>
+        
+      
+    </div>
+
+    <!-- COMPLETED TODAY -->
+    <div class="kitchen-col col-completed">
+      <div class="kitchen-col-header">
+        <span>🏁 Done Today</span>
+        <span class="badge badge-muted"></span>
+      </div>
+      
+        <div style="padding:30px; text-align:center; color:var(--text-muted); font-size:0.85rem;">No completed orders today</div>
+      
+        
+          <div class="kitchen-card done">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="font-size:0.85rem;"></strong>
+              <span class="badge badge-success fs-sm">Done</span>
+            </div>
+            <div style="font-size:0.77rem; color:var(--text-muted);">
+              🪑  · Rs 
+            </div>
+          </div>
+        
+      
+    </div>
+
+  </div><!-- /.kitchen-board -->
+
+</div><!-- /.main-content -->
+
+<script>
+let autoRefreshInterval = null;
+function toggleAutoRefresh(cb) {
+  if (cb.checked) {
+    autoRefreshInterval = setInterval(() => location.reload(), 30000);
+  } else {
+    clearInterval(autoRefreshInterval);
+  }
+}
+</script>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

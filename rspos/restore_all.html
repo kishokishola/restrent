@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Restore Complete</title>
+<style>
+body{font-family:monospace;background:#0f0f1a;color:#f0f0f0;padding:30px;}
+h2{color:#e8a838;margin-bottom:20px;}
+.ok{color:#6fcf97;line-height:2;}
+.er{color:#ff8091;line-height:2;}
+.box{background:rgba(40,167,69,.1);border-left:4px solid #28a745;padding:16px 20px;border-radius:8px;margin-top:20px;}
+a{color:#e8a838;font-weight:700;}
+</style>
+</head>
+<body>
+<h2>🔧 RestaurantPOS — Full Restore</h2>
+<div class="ok">
+
+</div>
+
+<div class="er" style="margin-top:16px;">
+
+</div>
+
+<div class="box">
+  <p>✅ <strong>Restore complete!</strong> Total:  items seeded.</p>
+  <br>
+  <p>🔐 <a href="./admin_login.html">Admin Login</a> — Username: <strong>admin</strong> | Password: <strong>admin123</strong></p>
+  <p>👤 <a href="./login.html">Staff Login</a> — Username: <strong>cashier1</strong> | Password: <strong>password</strong></p>
+  <p>🍽️ <a href="./customer_order.html">Customer Order Page</a></p>
+  <br>
+  <p style="color:#ffc107;">⚠️ Delete restore_all.html after use!</p>
+</div>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>

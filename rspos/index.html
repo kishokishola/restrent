@@ -1,0 +1,8 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="refresh" content="0; url=login.html"><title>ServePoint POS</title></head><body><p>Opening <a href="login.html">ServePoint POS</a>…</p><script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

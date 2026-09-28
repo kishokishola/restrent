@@ -1,0 +1,591 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>orders — Static demo</title></head><body>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Order Management — RestoPOS</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    /* ── New Order full-screen overlay ── */
+    .order-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--bg-dark);
+      z-index: 2000;
+      flex-direction: column;
+    }
+    .order-overlay.open { display: flex; }
+
+    .order-overlay-header {
+      background: var(--navbar-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .order-body {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      flex: 1;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    /* left menu pane */
+    .menu-pane {
+      overflow-y: auto;
+      padding: 16px;
+      border-right: 1px solid var(--border);
+    }
+
+    /* right cart pane */
+    .cart-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .cart-pane-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700; font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+    }
+    .cart-footer {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    /* menu item row */
+    .menu-item-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--bg-card2);
+    }
+    .menu-item-row:hover,
+    .menu-item-row:active {
+      border-color: var(--primary);
+      background: rgba(232,168,56,0.07);
+    }
+    .item-emoji {
+      width: 42px; height: 42px;
+      background: var(--bg-dark);
+      border-radius: 8px;
+      display: flex; align-items: center;
+      justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+
+    /* cart items */
+    .cart-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-info { flex: 1; min-width: 0; }
+    .cart-item-name {
+      font-size: 0.86rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cart-item-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .qty-ctrl { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+    .qty-btn {
+      width: 24px; height: 24px; border-radius: 50%;
+      border: none; background: var(--bg-dark);
+      color: var(--text-main); cursor: pointer; font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .qty-btn:hover { background: var(--primary); color: #000; }
+    .qty-val { min-width: 20px; text-align: center; font-weight: 700; font-size: 0.88rem; }
+
+    /* summary */
+    .cart-summary { padding: 12px 16px; background: var(--bg-card2); }
+    .sum-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0; color: var(--text-muted); }
+    .sum-row.total { font-size: 1.05rem; font-weight: 800; color: var(--primary); border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+
+    /* category tabs */
+    .cat-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cat-btn {
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-dark); color: var(--text-muted);
+      cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      transition: var(--transition);
+    }
+    .cat-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(232,168,56,0.1); }
+
+    /* orders table items preview */
+    .items-preview { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; }
+
+    @media (max-width: 768px) {
+      .order-body { grid-template-columns: 1fr; }
+      .cart-pane { max-height: 380px; }
+    }
+  </style>
+</head>
+<body class="pos-bg">
+
+
+<div class="main-content">
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+  
+    <div class="alert alert-success">✅ </div>
+  
+
+  <!-- Status Tabs -->
+  <div class="report-tabs" style="max-width:520px; margin-bottom:20px;">
+    <a href="?status=active"    class="report-tab ">🔴 Active</a>
+    <a href="?status=completed" class="report-tab ">✅ Completed</a>
+    <a href="?status=cancelled" class="report-tab ">❌ Cancelled</a>
+    <a href="?status=all"       class="report-tab ">📋 All</a>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="card">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Table</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Cashier</th>
+            <th>Time</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          
+            <tr>
+              <td colspan="9" class="text-center text-muted" style="padding:50px;">
+                <div style="font-size:2.5rem; margin-bottom:10px;">📋</div>
+                No orders found.
+              </td>
+            </tr>
+          
+            
+            <tr>
+              <td data-label="Order #">
+                <strong style="color:var(--primary);"></strong>
+              </td>
+              <td data-label="Table">
+                <span class="badge badge-muted">🪑 </span>
+              </td>
+              <td data-label="Customer">
+                <span>👤 </span>
+              </td>
+              <td data-label="Items">
+                <span class="badge badge-primary"> items</span>
+                <div class="items-preview"></div>
+              </td>
+              <td data-label="Total">
+                <span class="text-primary fw-bold">Rs </span>
+              </td>
+              <td data-label="Status">
+                <span class="badge "></span>
+              </td>
+              <td data-label="Cashier" class="text-muted fs-sm"></td>
+              <td data-label="Time" class="text-muted fs-sm"></td>
+              <td data-label="Actions">
+                <div class="d-flex gap-1">
+                  <a href="./billing.html?order_id=" class="btn btn-outline btn-sm">💳 Bill</a>
+                  
+                    <form method="POST" onsubmit="return confirm('Cancel this order?')" style="display:inline;">
+                      <input type="hidden" name="action"   value="cancel_order">
+                      <input type="hidden" name="order_id" value="">
+                      <button class="btn btn-danger btn-sm">✕</button>
+                    </form>
+                  
+                </div>
+              </td>
+            </tr>
+            
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /.main-content -->
+
+<!-- ══════════════════════════════════════════════════
+     NEW ORDER FULL-SCREEN OVERLAY
+══════════════════════════════════════════════════ -->
+<div class="order-overlay" id="newOrderOverlay">
+
+  <!-- Header bar -->
+  <div class="order-overlay-header">
+    <div class="d-flex align-center gap-2" style="flex-wrap:wrap; gap:8px;">
+      <span style="font-size:1.1rem; font-weight:800; color:var(--primary);">🛒 New Order</span>
+
+      <select id="orderTable" class="form-control" style="width:auto;">
+        <option value="0">🪑 Takeaway</option>
+        
+          <option value="">  ()</option>
+        
+      </select>
+
+      <select id="orderCustomer" class="form-control" style="width:auto;">
+        <option value="0">👤 Walk-in</option>
+        
+          <option value=""> </option>
+        
+      </select>
+    </div>
+
+    <button class="btn btn-danger btn-sm" onclick="closeNewOrder()">✕ Close</button>
+  </div>
+
+  <!-- Body: menu left, cart right -->
+  <div class="order-body">
+
+    <!-- LEFT: Menu Items -->
+    <div class="menu-pane">
+
+      <!-- Search -->
+      <div style="position:relative; margin-bottom:12px;">
+        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);">🔍</span>
+        <input type="text" id="menuSearch" class="form-control" style="padding-left:36px;"
+               placeholder="Search food or drink..." oninput="filterMenu(this.value)">
+      </div>
+
+      <!-- Category filter tabs -->
+      <div class="cat-tabs" id="catTabs">
+        <button class="cat-btn active" onclick="filterCat('all',this)">🍽️ All</button>
+        
+          <button class="cat-btn" onclick="filterCat('',this)">
+            
+          </button>
+        
+      </div>
+
+      <!-- Menu items list -->
+      <div id="menuList">
+        
+          <div class="menu-item-row"
+               data-cat=""
+               data-name=""
+               onclick="addItem(, , )">
+            <div class="item-emoji"></div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:600; font-size:0.88rem;"></div>
+              <div style="font-size:0.74rem; color:var(--text-muted);"></div>
+            </div>
+            <div style="font-weight:700; color:var(--primary); white-space:nowrap;">
+              Rs 
+            </div>
+          </div>
+        
+        
+          <div style="text-align:center; padding:40px; color:var(--text-muted);">
+            No menu items found. <a href="./menu.html" style="color:var(--primary);">Add items →</a>
+          </div>
+        
+      </div>
+    </div>
+
+    <!-- RIGHT: Cart / Current Order -->
+    <div class="cart-pane">
+
+      <!-- Cart header -->
+      <div class="cart-pane-header">
+        🧾 Current Order
+        <span id="cartCount" class="badge badge-primary" style="margin-left:8px;">0 items</span>
+      </div>
+
+      <!-- Selected table / customer info bar -->
+      <div id="orderInfoBar" style="padding:8px 14px; background:rgba(232,168,56,0.07); border-bottom:1px solid var(--border); font-size:0.8rem; display:flex; gap:14px; flex-wrap:wrap;">
+        <span id="infoTable" style="color:var(--text-muted);">🪑 Takeaway</span>
+        <span id="infoCustomer" style="color:var(--text-muted);">👤 Walk-in</span>
+      </div>
+
+      <!-- Cart items -->
+      <div class="cart-items" id="cartItems">
+        <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+          <div style="font-size:2.5rem; margin-bottom:10px;">🛒</div>
+          <p>Tap any food item to add</p>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div style="padding:10px 14px; border-top:1px solid var(--border); flex-shrink:0;">
+        <textarea id="orderNotes" class="form-control" rows="2"
+                  style="resize:none; font-size:0.82rem;"
+                  placeholder="📝 Special instructions (optional)..."></textarea>
+      </div>
+
+      <!-- Order summary + place button -->
+      <div class="cart-summary">
+        <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal">Rs 0.00</span></div>
+        <div class="sum-row"><span>Service Amount (6%)</span><span id="sumTax">Rs 0.00</span></div>
+        <div class="sum-row total"><span>TOTAL</span><span id="sumTotal">Rs 0.00</span></div>
+        <button id="placeBtn" class="btn btn-primary btn-block btn-lg" style="margin-top:10px;" onclick="placeOrder()">
+          ✅ Place Order
+        </button>
+        <button class="btn btn-ghost btn-block" style="margin-top:6px; font-size:0.82rem;" onclick="clearCart()">
+          🗑️ Clear All
+        </button>
+      </div>
+
+    </div><!-- /.cart-pane -->
+  </div><!-- /.order-body -->
+</div><!-- /.order-overlay -->
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-body text-center" style="padding:40px 30px;">
+      <div style="font-size:4rem; margin-bottom:12px;">✅</div>
+      <h2 style="margin-bottom:4px;">Order Placed!</h2>
+      <p id="successNum"   class="text-muted"  style="font-size:1rem; margin:8px 0 4px;"></p>
+      <p id="successTotal" class="text-primary fw-bold" style="font-size:1.5rem; margin-bottom:20px;"></p>
+      <div class="d-flex gap-2" style="justify-content:center;">
+        <a id="billBtn" href="#" class="btn btn-primary">💳 Generate Bill</a>
+        <button class="btn btn-outline" onclick="anotherOrder()">➕ New Order</button>
+        <button class="btn btn-ghost" onclick="doneOrdering()">✔ Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// Cart state
+// ─────────────────────────────────────────────────────────
+let cart = {};   // { id: { id, name, price, qty } }
+
+// ─────────────────────────────────────────────────────────
+// Overlay open / close
+// ─────────────────────────────────────────────────────────
+function openNewOrder() {
+  document.getElementById('newOrderOverlay').classList.add('open');
+  document.getElementById('menuSearch').focus();
+  updateInfoBar();
+}
+function closeNewOrder() {
+  document.getElementById('newOrderOverlay').classList.remove('open');
+}
+
+// Update info bar when table/customer changes
+document.getElementById('orderTable').addEventListener('change', updateInfoBar);
+document.getElementById('orderCustomer').addEventListener('change', updateInfoBar);
+
+function updateInfoBar() {
+  const tSel = document.getElementById('orderTable');
+  const cSel = document.getElementById('orderCustomer');
+  const tText = tSel.options[tSel.selectedIndex].text;
+  const cText = cSel.options[cSel.selectedIndex].text;
+  document.getElementById('infoTable').textContent    = '🪑 ' + tText;
+  document.getElementById('infoCustomer').textContent = '👤 ' + cText;
+}
+
+// ─────────────────────────────────────────────────────────
+// Add / remove items
+// ─────────────────────────────────────────────────────────
+function addItem(id, name, price) {
+  if (cart[id]) {
+    cart[id].qty++;
+  } else {
+    cart[id] = { id: id, name: name, price: parseFloat(price), qty: 1 };
+  }
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty 
+        <div style="font-size:2.5rem; margin-bottom:10px;">🛒</div>
+        <p>Tap any food item to add</p>
+      </div>`;
+    document.getElementById('cartCount').textContent = '0 items';
+    updateSummary(0);
+    return;
+  }
+
+  let html      = '';
+  let subtotal  = 0;
+  let totalQty  = 0;
+
+  items.forEach(it => {
+    const lineTotal = it.price * it.qty;
+    subtotal  += lineTotal;
+    totalQty  += it.qty;
+    html += `
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name" title="${escHtml(it.name)}">${escHtml(it.name)}</div>
+        <div class="cart-item-sub">Rs ${it.price.toFixed(2)} × ${it.qty} = <b style="color:var(--primary)">Rs ${lineTotal.toFixed(2)}</b></div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(${it.id}, -1)">−</button>
+        <span class="qty-val">${it.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${it.id}, 1)">＋</button>
+        <button class="qty-btn" onclick="removeItem(${it.id})" style="color:var(--danger); margin-left:2px;" title="Remove">🗑</button>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('cartCount').textContent = totalQty + (totalQty === 1 ? ' item' : ' items');
+  updateSummary(subtotal);
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateSummary(subtotal) {
+  const tax   = Math.round(subtotal * 0.06 * 100) / 100;
+  const total = Math.round((subtotal + tax) * 100) / 100;
+  document.getElementById('sumSubtotal').textContent = 'Rs ' + subtotal.toFixed(2);
+  document.getElementById('sumTax').textContent      = 'Rs ' + tax.toFixed(2);
+  document.getElementById('sumTotal').textContent    = 'Rs ' + total.toFixed(2);
+}
+
+// ─────────────────────────────────────────────────────────
+// Category filter
+// ─────────────────────────────────────────────────────────
+function filterCat(catId, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.menu-item-row').forEach(row => {
+    row.style.display = (catId === 'all' || row.dataset.cat === catId) ? '' : 'none';
+  });
+}
+
+function filterMenu(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.menu-item-row').forEach(row => {
+    row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+// Place Order
+// ─────────────────────────────────────────────────────────
+function placeOrder() {
+  const items = Object.values(cart);
+  if (items.length === 0) {
+    alert('Please select at least one item.');
+    return;
+  }
+
+  const btn = document.getElementById('placeBtn');
+  btn.disabled  = true;
+  btn.innerHTML = '⏳ Saving order...';
+
+  const fd = new FormData();
+  fd.append('action',      'place_order');
+  fd.append('table_id',    document.getElementById('orderTable').value);
+  fd.append('customer_id', document.getElementById('orderCustomer').value);
+  fd.append('notes',       document.getElementById('orderNotes').value);
+  fd.append('items',       JSON.stringify(items));
+
+  fetch('./ajax_order.html', { method: 'POST', body: fd })
+    .then(r => r.text())
+    .then(text => {
+      btn.disabled  = false;
+      btn.innerHTML = '✅ Place Order';
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch(e) {
+        console.error('Server raw response:', text);
+        alert('Server error. Press F12 → Console tab to see details.');
+        return;
+      }
+
+      if (data.success) {
+        closeNewOrder();
+        // Show success popup
+        document.getElementById('successNum').textContent   = '🧾 ' + data.order_number;
+        document.getElementById('successTotal').textContent = 'Rs ' + parseFloat(data.total).toFixed(2);
+        document.getElementById('billBtn').href = './billing.html?order_id=' + data.order_id;
+        document.getElementById('successModal').classList.add('open');
+        clearCart();
+        // Refresh orders table
+        refreshOrdersTable();
+      } else {
+        alert('❌ ' + (data.message || 'Failed to place order.'));
+      }
+    })
+    .catch(err => {
+      btn.disabled  = false;
+      btn.innerHTML = '✅ Place Order';
+      console.error('Fetch error:', err);
+      alert('Connection error.\n\nMake sure XAMPP Apache & MySQL are running.\n\n' + err.message);
+    });
+}
+
+// ─────────────────────────────────────────────────────────
+// After success
+// ─────────────────────────────────────────────────────────
+function anotherOrder() {
+  document.getElementById('successModal').classList.remove('open');
+  openNewOrder();
+}
+function doneOrdering() {
+  document.getElementById('successModal').classList.remove('open');
+  location.reload();
+}
+
+// ─────────────────────────────────────────────────────────
+// Refresh orders list without full page reload
+// ─────────────────────────────────────────────────────────
+function refreshOrdersTable() {
+  // Simple: just reload the page after 1s so new order shows up
+  setTimeout(() => location.reload(), 800);
+}
+</script>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

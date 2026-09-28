@@ -1,0 +1,403 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>billing — Static demo</title></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.json">
+  <title>Billing & Payment — ServePoint</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .wizard{width:100%;max-width:1000px;margin:0 auto}
+    .steps{display:flex;gap:8px;overflow-x:auto;margin-bottom:22px;padding-bottom:4px}
+    .step{white-space:nowrap;padding:9px 16px;border-radius:20px;background:var(--bg-card2);color:var(--text-muted);font-size:.8rem;font-weight:700;transition:.2s}
+    .step.active{background:var(--primary);color:#000;box-shadow:0 3px 12px rgba(232,168,56,.35)}
+    .panel{display:none}
+    .panel.active{display:block;animation:pFade .22s ease forwards}
+    @keyframes pFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .gridx{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+    .choice{border:1.5px solid var(--border);border-radius:14px;padding:22px 16px;background:var(--bg-card);cursor:pointer;text-align:center;color:var(--text-main);transition:all .2s;position:relative;overflow:hidden;width:100%}
+    .choice:hover,.choice.selected{border-color:var(--primary);box-shadow:0 0 0 2px rgba(232,168,56,.25);transform:translateY(-2px)}
+    .choice.selected{background:rgba(232,168,56,.12);border-color:var(--primary);color:var(--primary)}
+    .ico{font-size:2.8rem;display:block;margin-bottom:8px}
+    .choice-title{font-weight:800;font-size:1.1rem}
+    .choice-sub{font-size:.76rem;color:var(--text-muted);margin-top:4px}
+    .summary{max-width:620px;margin:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:20px 24px}
+    .line{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border)}
+    .line.total{font-size:1.3rem;font-weight:900;color:var(--primary);border-bottom:none;padding-top:14px}
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:24px}
+    .field{display:none;margin-top:18px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:16px;padding:20px}
+    .field.show{display:block;animation:pFade .2s ease forwards}
+
+    /* Receipt formatting */
+    .receipt{width:270px;margin:auto;background:#fff;color:#000;padding:18px 14px;font:11px 'Courier New',monospace;line-height:1.45;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+    .center{text-align:center}
+    .receipt hr{border:0;border-top:1px dashed #000;margin:6px 0}
+    .success-mark{text-align:center;font-size:3.2rem;margin-bottom:6px}
+    .payment-stamp{
+      text-align:center;
+      font-weight:900;
+      font-size:14px;
+      padding:7px 4px;
+      margin:8px 0;
+      border:1.5px dashed #000;
+      letter-spacing:1.5px;
+      background:#f8f9fa;
+    }
+
+    @media print{
+      body>*{display:none!important}
+      #printReceipt{display:block!important;position:absolute;left:0;top:0;width:100%}
+      .receipt{width:58mm;padding:2mm;font-size:9pt;box-shadow:none}
+      .payment-stamp{border:1.5px dashed #000;font-size:11pt;padding:4px;}
+    }
+    #printReceipt{display:none}
+  </style>
+</head>
+<body class="pos-bg">
+
+
+<main class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">💳 <span>Billing & Payment</span></h1>
+      <p class="page-subtitle">Select Cash or Card payment & print customer bill receipt.</p>
+    </div>
+  </div>
+
+  
+    <div class="alert alert-danger" style="margin-bottom:18px;">⚠️ </div>
+  
+
+  
+    <!-- ── Payment Success & Receipt ── -->
+    <section class="card" style="max-width:540px;margin:0 auto;">
+      <div class="card-body" style="padding:26px 20px;">
+        <div class="success-mark">✅</div>
+        <h2 style="text-align:center;color:var(--success);margin-bottom:4px;">Payment Received!</h2>
+        <p class="text-muted" style="text-align:center;margin-bottom:12px;">
+          Table  · Order 
+        </p>
+
+        <div style="text-align:center;margin-bottom:20px;">
+          <span class="badge " style="font-size:1rem;padding:7px 18px;font-weight:800;letter-spacing:1px;">
+            
+          </span>
+        </div>
+        
+        <div class="receipt" id="receipt">
+          <div class="center">
+            <b style="font-size:14px">★ SERVEPOINT ★</b><br>
+            HOTEL & RESTAURANT POS<br>
+            <small></small>
+          </div>
+          <hr>
+          Order : <br>
+          Table: <br>
+          Customer: <br>
+          Cashier: 
+          <hr>
+          
+             × 
+            <span style="float:right">Rs </span><br>
+          
+          <hr>
+          Subtotal: <span style="float:right">Rs </span><br>
+          Tax (6%): <span style="float:right">Rs </span><br>
+          <b>TOTAL: <span style="float:right">Rs </span></b><br>
+          <hr>
+          <div class="payment-stamp">
+            ***  ***
+          </div>
+          Payment Mode: <b style="float:right"></b><br>
+          Total Paid: <span style="float:right">Rs </span><br>
+          Payment Status: <span style="float:right">PAID (CONFIRMED)</span><br>
+          <hr>
+          <div class="center" style="font-weight:bold;margin-top:6px;">
+            Thank you for dining with us!<br>
+            Please visit again 🍽️
+          </div>
+        </div>
+
+        <div class="actions" style="justify-content:center;margin-top:24px;">
+          <button class="btn btn-primary" onclick="window.print()">🖨 Print Bill Receipt</button>
+          <a class="btn btn-outline" href="./billing.html">Process Another Bill</a>
+        </div>
+      </div>
+    </section>
+    <div id="printReceipt"></div>
+    <script>
+      document.getElementById('printReceipt').innerHTML = document.getElementById('receipt').outerHTML;
+    </script>
+  
+    <!-- ── Billing Flow Wizard ── -->
+    <div class="wizard">
+      <div class="steps">
+        <span class="step active" data-s="1">1. Select Table</span>
+        <span class="step" data-s="2">2. Select Order</span>
+        <span class="step" data-s="3">3. Order Summary</span>
+        <span class="step" data-s="4">4. Payment (Cash / Card)</span>
+        <span class="step" data-s="5">5. Review & Confirm</span>
+      </div>
+
+      <!-- Step 1: Select Table -->
+      <section class="panel active card" data-p="1">
+        <div class="card-header"><div class="card-title">🪑 Select Table with Completed Order</div></div>
+        <div class="card-body"><div class="gridx" id="tables"></div></div>
+      </section>
+
+      <!-- Step 2: Select Order -->
+      <section class="panel card" data-p="2">
+        <div class="card-header"><div class="card-title">🍽️ Select Customer Order</div></div>
+        <div class="card-body">
+          <div class="gridx" id="orderList"></div>
+          <div class="actions"><button class="btn btn-ghost" onclick="go(1)">← Back to Tables</button></div>
+        </div>
+      </section>
+
+      <!-- Step 3: Order Summary -->
+      <section class="panel card" data-p="3">
+        <div class="card-header"><div class="card-title">🧾 Order Summary & Bill Total</div></div>
+        <div class="card-body">
+          <div class="summary" id="orderSummary"></div>
+          <div class="actions">
+            <button class="btn btn-ghost" onclick="go(2)">← Back</button>
+            <button class="btn btn-primary" onclick="go(4)">Proceed to Payment Method →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Payment Method (Cash / Card) -->
+      <section class="panel card" data-p="4">
+        <div class="card-header">
+          <div class="card-title">💰 Select Payment Method (Cash or Card)</div>
+        </div>
+        <div class="card-body">
+          
+          <!-- Payment Options Grid: Cash & Card Only -->
+          <div class="gridx" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));max-width:540px;margin:0 auto 24px;">
+            <button type="button" class="choice selected" id="optCash" onclick="methodSelect('cash')">
+              <span class="ico">💵</span>
+              <div class="choice-title">Cash Payment</div>
+              <div class="choice-sub">Direct cash (PAID - CASH)</div>
+            </button>
+            
+            <button type="button" class="choice" id="optCard" onclick="methodSelect('card')">
+              <span class="ico">💳</span>
+              <div class="choice-title">Card Payment</div>
+              <div class="choice-sub">Credit / Debit Card (PAID - CARD)</div>
+            </button>
+          </div>
+
+          <!-- CASH FIELDS -->
+          <div class="field show" id="cashFields" style="max-width:540px;margin:0 auto;">
+            <div style="background:rgba(40,167,69,.12);border:1.5px solid rgba(40,167,69,.35);border-radius:16px;padding:24px 20px;text-align:center;">
+              <div style="font-size:3rem;margin-bottom:8px;">💵</div>
+              <h3 style="color:var(--success);margin-bottom:6px;font-weight:800;font-size:1.3rem;">Cash Payment</h3>
+              <p class="text-muted" style="font-size:.88rem;margin-bottom:16px;">
+                Customer pays by Cash. Cashier collects cash & hands change manually.
+              </p>
+              
+              <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:700;">Bill Total Payable:</span>
+                <span id="cashPayableTotal" style="font-size:1.35rem;font-weight:900;color:var(--primary);">Rs 0.00</span>
+              </div>
+
+              <div style="background:rgba(40,167,69,.15);border:1px solid #28a745;color:#28a745;border-radius:20px;display:inline-block;padding:8px 18px;font-size:.9rem;font-weight:700;">
+                ✅ Receipt will be printed as: <strong>PAID - CASH</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD FIELDS -->
+          <div class="field" id="cardFields" style="max-width:540px;margin:0 auto;">
+            <div style="background:rgba(232,168,56,.12);border:1.5px solid rgba(232,168,56,.35);border-radius:16px;padding:24px 20px;text-align:center;">
+              <div style="font-size:3rem;margin-bottom:8px;">💳</div>
+              <h3 style="color:var(--primary);margin-bottom:6px;font-weight:800;font-size:1.3rem;">Card Payment</h3>
+              <p class="text-muted" style="font-size:.88rem;margin-bottom:16px;">
+                Customer pays with Debit or Credit card on external card machine.
+              </p>
+              
+              <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:700;">Total Amount on Card Machine:</span>
+                <span id="cardPayableAmt" style="font-size:1.35rem;font-weight:900;color:var(--primary);">Rs 0.00</span>
+              </div>
+
+              <div style="background:rgba(40,167,69,.15);border:1px solid #28a745;color:#28a745;border-radius:20px;display:inline-block;padding:8px 18px;font-size:.9rem;font-weight:700;">
+                ✅ Receipt will be printed as: <strong>PAID - CARD</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top:24px;">
+            <button type="button" class="btn btn-ghost" onclick="go(3)">← Back</button>
+            <button type="button" class="btn btn-primary" onclick="review()">Review Payment →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5: Review & Confirm -->
+      <section class="panel card" data-p="5">
+        <div class="card-header"><div class="card-title">✅ Payment Review & Confirmation</div></div>
+        <div class="card-body">
+          <div class="summary" id="paymentSummary"></div>
+          <form method="POST">
+            <input type="hidden" name="action" value="confirm_payment">
+            <input type="hidden" name="order_id" id="fId">
+            <input type="hidden" name="payment_method" id="fMethod">
+            <input type="hidden" name="discount" value="0">
+            <input type="hidden" name="tax_rate" value="6">
+
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" onclick="go(4)">← Back</button>
+              <button type="submit" class="btn btn-success" id="btnFinalConfirm" style="font-size:1.05rem;padding:12px 30px;">
+                ✅ Confirm & Print Bill Receipt
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <script>
+    const orders = ;
+    let picked = null, method = 'cash';
+
+    const rs = n => 'Rs ' + Number(n).toFixed(2);
+    const esc = s => String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function go(n) {
+      document.querySelectorAll('.panel').forEach(x => x.classList.toggle('active', +x.dataset.p === n));
+      document.querySelectorAll('.step').forEach(x => x.classList.toggle('active', +x.dataset.s === n));
+      scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function key(o) { return o.table_id || 'walkin'; }
+
+    function tables() {
+      let g = {};
+      orders.forEach(o => {
+        let k = key(o);
+        g[k] ??= { name: o.table_number, n: 0, key: k };
+        g[k].n++;
+      });
+      let a = Object.values(g);
+      document.getElementById('tables').innerHTML = a.length ? a.map(x => `
+        <button class="choice" onclick="pickTable('${x.key}')">
+          <span class="ico">🪑</span>
+          <div class="choice-title">${esc(x.name)}</div>
+          <small class="text-muted">${x.n} completed order${x.n > 1 ? 's' : ''}</small>
+        </button>
+      `).join('') : '<p class="text-muted" style="padding:20px;">No completed orders are currently waiting for payment.</p>';
+    }
+
+    function pickTable(k) {
+      let a = orders.filter(o => key(o) === k);
+      orderList.innerHTML = a.map(o => `
+        <button class="choice" onclick="pickOrder(${o.id})">
+          <div class="choice-title" style="color:var(--primary);">${esc(o.order_number)}</div>
+          <small class="text-muted">${esc(o.customer_name)}</small><br>
+          <small>${o.items.map(i => i.quantity + '× ' + esc(i.item_name)).join(', ')}</small><br>
+          <b style="font-size:1.05rem;display:inline-block;margin-top:6px;">${rs(o.total)}</b>
+        </button>
+      `).join('');
+      go(2);
+    }
+
+    function lines(o) {
+      return o.items.map(i => `
+        <div class="line">
+          <span>${esc(i.item_name)} ×${i.quantity}</span>
+          <span>${rs(i.total_price)}</span>
+        </div>
+      `).join('');
+    }
+
+    function pickOrder(id) {
+      picked = orders.find(o => o.id === id);
+      const totalNum = +picked.total;
+      
+      orderSummary.innerHTML = `
+        <div class="line"><span>Table</span><b>${esc(picked.table_number)}</b></div>
+        <div class="line"><span>Customer</span><b>${esc(picked.customer_name)}</b></div>
+        ${lines(picked)}
+        <div class="line"><span>Subtotal</span><span>${rs(picked.subtotal)}</span></div>
+        <div class="line"><span>Tax (6%)</span><span>${rs(picked.tax)}</span></div>
+        <div class="line total"><span>Total Payable</span><span>${rs(picked.total)}</span></div>
+      `;
+
+      document.getElementById('cashPayableTotal').textContent = rs(totalNum);
+      document.getElementById('cardPayableAmt').textContent = rs(totalNum);
+
+      methodSelect('cash');
+      go(3);
+    }
+
+    function methodSelect(m) {
+      method = m;
+      const isCash = (m === 'cash');
+      document.getElementById('optCash').classList.toggle('selected', isCash);
+      document.getElementById('optCard').classList.toggle('selected', !isCash);
+      document.getElementById('cashFields').classList.toggle('show', isCash);
+      document.getElementById('cardFields').classList.toggle('show', !isCash);
+    }
+
+    function review() {
+      if (!picked) return;
+      const total = +picked.total;
+      const isCard = (method === 'card');
+      const printBadge = isCard ? 'PAID - CARD' : 'PAID - CASH';
+
+      paymentSummary.innerHTML = `
+        <div class="line"><span>Table</span><b>${esc(picked.table_number)}</b></div>
+        <div class="line"><span>Order #</span><b>${esc(picked.order_number)}</b></div>
+        <div class="line"><span>Customer</span><b>${esc(picked.customer_name)}</b></div>
+        <div class="line"><span>Payment Mode</span><b style="color:var(--primary);font-size:1.15rem;">${printBadge}</b></div>
+        <div class="line total"><span>Total Payable</span><span>${rs(total)}</span></div>
+        <div style="margin-top:14px;font-size:.88rem;color:var(--text-muted);text-align:center;">
+          ${!isCard ? '💵 <i>Cash Payment: Cashier collects cash & hands change manually.</i>' : '💳 <i>Card Payment: Customer pays via external POS card machine.</i>'}
+        </div>
+      `;
+
+      fId.value = picked.id;
+      fMethod.value = method;
+
+      go(5);
+    }
+
+    tables();
+    const preOrderId = ;
+    if (preOrderId) {
+      const target = orders.find(o => o.id === preOrderId);
+      if (target) {
+        pickOrder(preOrderId);
+      }
+    }
+    setInterval(() => {
+      if (document.querySelector('[data-p="1"]').classList.contains('active')) {
+        location.reload();
+      }
+    }, 10000);
+    </script>
+  
+</main>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

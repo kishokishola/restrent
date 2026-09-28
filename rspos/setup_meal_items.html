@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Items Setup</title>
+  <style>
+    body { font-family: monospace; background: #0f0f1a; color: #f0f0f0; padding: 30px; }
+    h2   { color: #e8a838; margin-bottom: 20px; }
+    .log { line-height: 2; font-size: 0.9rem; }
+    .done { margin-top: 30px; padding: 18px 24px; background: rgba(40,167,69,0.15);
+            border-left: 4px solid #28a745; border-radius: 8px; font-size: 1rem; }
+    a { color: #e8a838; }
+  </style>
+</head>
+<body>
+  <h2>🍽️ Meal Items Setup — RestoPOS</h2>
+  <div class="log">
+    
+      <div></div>
+    
+  </div>
+  <div class="done">
+    ✅ Setup complete! Total items processed: <br><br>
+    👉 <a href="./customer_order.html">Go to Customer Order Page</a> &nbsp;|&nbsp;
+    <a href="./orders.html">Go to Admin Orders</a>
+  </div>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
