@@ -1,0 +1,257 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>customers — Static demo</title></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Customer Management — RestoPOS</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .cust-layout { display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start; }
+    .cust-row { cursor:pointer; }
+    .cust-row.active { background:rgba(232,168,56,0.06) !important; }
+    .cust-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem; color:#000; flex-shrink:0; }
+    @media(max-width:900px){ .cust-layout{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body class="pos-bg">
+
+
+<div class="main-content">
+
+  <div class="page-header">
+   
+    <button class="btn btn-primary" onclick="openCustModal()">＋ Add Customer</button>
+  </div>
+
+  <div class="alert alert-success">✅ </div>
+  <div class="alert alert-danger">⚠️ </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="stat-icon blue">👥</div>
+      <div class="stat-info"><div class="stat-value"></div><div class="stat-label">Total Customers</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">🛒</div>
+      <div class="stat-info"><div class="stat-value"></div><div class="stat-label">Customer Orders</div></div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="filter-bar">
+    <form method="GET" style="display:contents;">
+      <div class="search-box" style="flex:1; max-width:400px;">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="q" class="form-control" placeholder="Search by name or phone..." value="">
+      </div>
+      <button class="btn btn-primary" type="submit">Search</button>
+      <a href="./customers.html" class="btn btn-ghost">Clear</a>
+    </form>
+  </div>
+
+  <div class="cust-layout">
+
+    <!-- Left: Customer List -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">👥</span> Customers</div>
+        <span class="text-muted fs-sm"> found</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Customer</th><th>Phone</th><th>Email</th><th>Orders</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            
+              <tr><td colspan="5" class="text-center text-muted" style="padding:40px;">
+                
+              </td></tr>
+            
+              
+                <tr class="cust-row " onclick="window.location.href='?id='">
+                  <td data-label="Customer">
+                    <div class="d-flex align-center gap-2">
+                      <div class="cust-avatar"></div>
+                      <div>
+                        <div class="fw-bold"></div>
+                        <div class="fs-sm text-muted">📍 </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Phone"></td>
+                  <td data-label="Email" class="text-muted"></td>
+                  <td data-label="Orders"><span class="badge badge-primary"></span></td>
+                  <td data-label="Actions">
+                    <div class="d-flex gap-1" onclick="event.stopPropagation()">
+                      <button class="btn btn-outline btn-sm" onclick="editCust()">✏️</button>
+                      <form method="POST" onsubmit="return confirm('Delete this customer?')">
+                        <input type="hidden" name="action" value="delete_customer">
+                        <input type="hidden" name="cust_id" value="">
+                        <button class="btn btn-danger btn-sm">🗑️</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: Customer Detail / Order History -->
+    <div>
+      
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">👤</span> Customer Profile</div>
+            <button class="btn btn-outline btn-sm" onclick="editCust()">✏️ Edit</button>
+          </div>
+          <div class="card-body">
+            <div style="text-align:center; margin-bottom:20px;">
+              <div class="cust-avatar" style="width:64px; height:64px; font-size:1.5rem; margin:0 auto 12px;">
+                
+              </div>
+              <h3></h3>
+              <p class="text-muted">📞 </p>
+              <p class="text-muted">✉️ </p>
+              <p class="text-muted fs-sm">📍 </p>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div style="background:var(--bg-dark); border-radius:var(--radius-sm); padding:14px; text-align:center;">
+                <div class="stat-value" style="font-size:1.3rem;"></div>
+                <div class="stat-label">Orders</div>
+              </div>
+              <div style="background:var(--bg-dark); border-radius:var(--radius-sm); padding:14px; text-align:center;">
+                <div class="stat-value text-primary" style="font-size:1.1rem;">Rs </div>
+                <div class="stat-label">Total Spent</div>
+              </div>
+            </div>
+            <p class="text-muted fs-sm text-center" style="margin-top:10px;">
+              Member since 
+            </p>
+          </div>
+        </div>
+
+        <!-- Order History -->
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">🛒</span> Order History</div></div>
+          <div style="max-height:400px; overflow-y:auto;">
+            
+              <p class="text-muted text-center" style="padding:30px;">No orders yet.</p>
+            
+              
+                <div style="padding:12px 18px; border-bottom:1px solid var(--border);">
+                  <div class="d-flex justify-between align-center">
+                    <div>
+                      <div class="fw-bold fs-sm"></div>
+                      <div class="text-muted" style="font-size:0.75rem;">🪑  · </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-primary fw-bold">Rs </div>
+                      <span class="badge "></span>
+                    </div>
+                  </div>
+                </div>
+              
+            
+          </div>
+        </div>
+
+      
+        <div class="card">
+          <div class="card-body text-center" style="padding:50px;">
+            <div style="font-size:3rem; margin-bottom:14px;">👆</div>
+            <h3 class="text-muted">Select a customer</h3>
+            <p class="text-muted fs-sm" style="margin-top:6px;">Click on any customer to view their profile and order history</p>
+          </div>
+        </div>
+      
+    </div>
+
+  </div>
+
+</div><!-- /.main-content -->
+
+<!-- Add/Edit Customer Modal -->
+<div class="modal-overlay" id="custModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="custModalTitle">➕ Add Customer</h3>
+      <button class="modal-close" onclick="closeModal('custModal')">✕</button>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="save_customer">
+      <input type="hidden" name="cust_id" id="custId" value="0">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" name="name" id="custName" class="form-control" placeholder="Customer name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <div class="input-group">
+            <span class="input-prefix">📞</span>
+            <input type="text" name="phone" id="custPhone" class="form-control" placeholder="e.g. 0123456789">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <div class="input-group">
+            <span class="input-prefix">✉️</span>
+            <input type="email" name="email" id="custEmail" class="form-control" placeholder="email@example.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <textarea name="address" id="custAddress" class="form-control" rows="2" placeholder="Optional address..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('custModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Save Customer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openCustModal() {
+  document.getElementById('custModalTitle').textContent = '➕ Add Customer';
+  document.getElementById('custId').value = '0';
+  ['custName','custPhone','custEmail','custAddress'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('custModal').classList.add('open');
+}
+function editCust(c) {
+  document.getElementById('custModalTitle').textContent = '✏️ Edit Customer';
+  document.getElementById('custId').value      = c.id;
+  document.getElementById('custName').value    = c.name;
+  document.getElementById('custPhone').value   = c.phone || '';
+  document.getElementById('custEmail').value   = c.email || '';
+  document.getElementById('custAddress').value = c.address || '';
+  document.getElementById('custModal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+</script>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

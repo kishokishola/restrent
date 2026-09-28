@@ -1,0 +1,286 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>inventory — Static demo</title></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Inventory — RestoPOS</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body class="pos-bg">
+
+
+<div class="main-content">
+
+  <div class="page-header">
+   
+    
+      <button class="btn btn-primary" onclick="openItemModal()">＋ Add Item</button>
+    
+  </div>
+
+  <div class="alert alert-success">✅ </div>
+  <div class="alert alert-danger">⚠️ </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); margin-bottom:20px;">
+    <div class="stat-card"><div class="stat-icon blue">📦</div><div class="stat-info"><div class="stat-value"></div><div class="stat-label">Total Items</div></div></div>
+    <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><div class="stat-value"></div><div class="stat-label">In Stock</div></div></div>
+    <div class="stat-card"><div class="stat-icon orange">⚠️</div><div class="stat-info"><div class="stat-value"></div><div class="stat-label">Low Stock</div></div></div>
+    <div class="stat-card"><div class="stat-icon red">❌</div><div class="stat-info"><div class="stat-value"></div><div class="stat-label">Out of Stock</div></div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <form method="GET" style="display:contents;">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="q" class="form-control" placeholder="Search inventory..." value="">
+      </div>
+      <select name="status" class="form-control" style="max-width:200px;">
+        <option value="">All Status</option>
+        <option value="in_stock"      >✅ In Stock</option>
+        <option value="low_stock"     >⚠️ Low Stock</option>
+        <option value="out_of_stock"  >❌ Out of Stock</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Filter</button>
+      <a href="./inventory.html" class="btn btn-ghost">Reset</a>
+    </form>
+  </div>
+
+  <!-- Inventory Table -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📦</span> Stock Items</div>
+      <span class="text-muted fs-sm"> items</span>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Unit</th><th>Qty</th><th>Min Qty</th><th>Stock Level</th><th>Supplier</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          
+            <tr><td colspan="8" class="text-center text-muted" style="padding:40px;">No inventory items found.</td></tr>
+          
+            
+              <tr>
+                <td data-label="Item"><strong></strong></td>
+                <td data-label="Unit"></td>
+                <td data-label="Qty" class="fw-bold ">
+                  
+                </td>
+                <td data-label="Min Qty" class="text-muted"></td>
+                <td data-label="Stock Level" style="min-width:120px;">
+                  <div class="stock-level">
+                    <div class="stock-bar">
+                      <div class="stock-fill " style="width:%"></div>
+                    </div>
+                    <span class="fs-sm text-muted">%</span>
+                  </div>
+                </td>
+                <td data-label="Supplier" class="text-muted"></td>
+                <td data-label="Status"><span class="badge "></span></td>
+                <td data-label="Actions">
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-success btn-sm" onclick="openStockModal(,'','','in')">＋ In</button>
+                    <button class="btn btn-warning btn-sm" onclick="openStockModal(,'','','out')">− Out</button>
+                    
+                      <button class="btn btn-outline btn-sm btn-icon-only" onclick="editItem()" title="Edit">✏️</button>
+                      <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this item?')">
+                        <input type="hidden" name="action" value="delete_item">
+                        <input type="hidden" name="item_id" value="">
+                        <button class="btn btn-danger btn-sm btn-icon-only">🗑️</button>
+                      </form>
+                    
+                  </div>
+                </td>
+              </tr>
+            
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header"><div class="card-title"><span class="icon">📋</span> Recent Transactions</div></div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>Notes</th><th>By</th><th>Date</th></tr></thead>
+        <tbody>
+          
+            <tr><td colspan="6" class="text-center text-muted" style="padding:30px;">No transactions yet.</td></tr>
+          
+            
+              <tr>
+                <td data-label="Item"><strong></strong></td>
+                <td data-label="Type">
+                  <span class="badge ">
+                    
+                  </span>
+                </td>
+                <td data-label="Qty"> </td>
+                <td data-label="Notes" class="text-muted"></td>
+                <td data-label="By" class="text-muted"></td>
+                <td data-label="Date" class="text-muted fs-sm"></td>
+              </tr>
+            
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /.main-content -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Add/Edit Item Modal -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title" id="itemModalTitle">➕ Add Inventory Item</h3>
+      <button class="modal-close" onclick="closeModal('itemModal')">✕</button>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="save_item">
+      <input type="hidden" name="item_id" id="itemId" value="0">
+      <div class="modal-body">
+        <div class="grid grid-2" style="gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Item Name *</label>
+            <input type="text" name="item_name" id="iName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit</label>
+            <input type="text" name="unit" id="iUnit" class="form-control" placeholder="kg, litre, pcs...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Current Quantity</label>
+            <input type="number" name="quantity" id="iQty" class="form-control" step="0.001" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Min. Quantity (Alert)</label>
+            <input type="number" name="min_quantity" id="iMinQty" class="form-control" step="0.001" min="0" value="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cost per Unit (Rs)</label>
+            <input type="number" name="cost_per_unit" id="iCost" class="form-control" step="0.01" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supplier</label>
+            <input type="text" name="supplier" id="iSupplier" class="form-control" placeholder="Supplier name">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('itemModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Stock In/Out Modal -->
+<div class="modal-overlay" id="stockModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="stockModalTitle">📦 Stock Transaction</h3>
+      <button class="modal-close" onclick="closeModal('stockModal')">✕</button>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="stock_transaction">
+      <input type="hidden" name="inv_id" id="stockInvId">
+      <input type="hidden" name="type" id="stockType">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" id="stockItemLabel">Item</label>
+          <p id="stockItemName" class="fw-bold" style="font-size:1rem;"></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity *</label>
+          <div class="input-group">
+            <input type="number" name="qty" class="form-control" step="0.001" min="0.001" placeholder="0" required>
+            <span class="input-prefix" id="stockUnit" style="border-left:none; border-radius:0 8px 8px 0;"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" name="notes" class="form-control" placeholder="Optional note...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('stockModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="stockSubmitBtn">Confirm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openItemModal() {
+  document.getElementById('itemModalTitle').textContent = '➕ Add Item';
+  document.getElementById('itemId').value    = '0';
+  document.getElementById('iName').value     = '';
+  document.getElementById('iUnit').value     = '';
+  document.getElementById('iQty').value      = '0';
+  document.getElementById('iMinQty').value   = '5';
+  document.getElementById('iCost').value     = '0';
+  document.getElementById('iSupplier').value = '';
+  document.getElementById('itemModal').classList.add('open');
+}
+function closeModal(id)  { document.getElementById(id).classList.remove('open'); }
+function editItem(item) {
+  document.getElementById('itemModalTitle').textContent = '✏️ Edit Item';
+  document.getElementById('itemId').value    = item.id;
+  document.getElementById('iName').value     = item.item_name;
+  document.getElementById('iUnit').value     = item.unit;
+  document.getElementById('iQty').value      = item.quantity;
+  document.getElementById('iMinQty').value   = item.min_quantity;
+  document.getElementById('iCost').value     = item.cost_per_unit;
+  document.getElementById('iSupplier').value = item.supplier || '';
+  openItemModal();
+}
+
+function openStockModal(id, name, unit, type) {
+  document.getElementById('stockInvId').value = id;
+  document.getElementById('stockType').value  = type;
+  document.getElementById('stockItemName').textContent = name;
+  document.getElementById('stockUnit').textContent     = unit;
+  document.getElementById('stockModalTitle').textContent = type === 'in' ? '＋ Stock In — '+name : '− Stock Out — '+name;
+  document.getElementById('stockSubmitBtn').textContent = type === 'in' ? '＋ Add Stock' : '− Deduct Stock';
+  document.getElementById('stockSubmitBtn').className  = type === 'in' ? 'btn btn-success' : 'btn btn-warning';
+  document.getElementById('stockModal').classList.add('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+</script>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

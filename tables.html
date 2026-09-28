@@ -1,0 +1,249 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>tables — Static demo</title></head><body>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Table Management — ServePoint</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .view-toggle { display:flex; gap:6px; }
+    .view-btn { padding:8px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--border); background:var(--bg-dark); color:var(--text-muted); cursor:pointer; transition:var(--transition); font-size:0.85rem; }
+    .view-btn.active { border-color:var(--primary); color:var(--primary); background:rgba(232,168,56,0.08); }
+  </style>
+</head>
+
+
+<body class="pos-bg">
+
+
+<div class="main-content">
+
+  <div class="page-header">
+   
+    <div class="d-flex gap-2">
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridViewBtn" onclick="setView('grid')">⊞ Grid</button>
+        <button class="view-btn" id="listViewBtn" onclick="setView('list')">☰ List</button>
+      </div>
+      
+        <button class="btn btn-primary" onclick="openTableModal()">＋ Add Table</button>
+      
+    </div>
+  </div>
+
+  <div class="alert alert-success">✅ </div>
+  <div class="alert alert-danger">⚠️ </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="stat-icon blue">🪑</div>
+      <div class="stat-info"><div class="stat-value"></div><div class="stat-label">Total Tables</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">🟢</div>
+      <div class="stat-info"><div class="stat-value"></div><div class="stat-label">Available</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red">🔴</div>
+      <div class="stat-info"><div class="stat-value"></div><div class="stat-label">Occupied</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">🟡</div>
+      <div class="stat-info"><div class="stat-value"></div><div class="stat-label">Reserved</div></div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="report-tabs" style="max-width:400px; margin-bottom:20px;">
+    <a href="?status=" class="report-tab ">All ()</a>
+    <a href="?status=available" class="report-tab ">Available</a>
+    <a href="?status=occupied"  class="report-tab ">Occupied</a>
+    <a href="?status=reserved"  class="report-tab ">Reserved</a>
+  </div>
+
+  <!-- Grid View -->
+  <div id="gridView">
+    <div class="table-grid">
+      
+        <div class="table-card ">
+          <div class="table-number"></div>
+          <div class="table-capacity">👥  seats</div>
+          
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">📍 </div>
+          
+          <div class="table-status ">
+            <span class="status-dot"></span>
+             
+          </div>
+          <div style="margin-top:12px; display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+            
+              <form method="POST" style="display:inline;">
+                <input type="hidden" name="action" value="change_status">
+                <input type="hidden" name="table_id" value="">
+                <input type="hidden" name="new_status" value="available">
+                <button class="btn btn-success btn-sm">Free</button>
+              </form>
+            
+            
+              <form method="POST" style="display:inline;">
+                <input type="hidden" name="action" value="change_status">
+                <input type="hidden" name="table_id" value="">
+                <input type="hidden" name="new_status" value="occupied">
+                <button class="btn btn-danger btn-sm">Occupy</button>
+              </form>
+            
+            
+              <form method="POST" style="display:inline;">
+                <input type="hidden" name="action" value="change_status">
+                <input type="hidden" name="table_id" value="">
+                <input type="hidden" name="new_status" value="reserved">
+                <button class="btn btn-warning btn-sm">Reserve</button>
+              </form>
+            
+            
+              <button class="btn btn-outline btn-sm" onclick="editTable()">✏️</button>
+              <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this table?')">
+                <input type="hidden" name="action" value="delete_table">
+                <input type="hidden" name="table_id" value="">
+                <button class="btn btn-ghost btn-sm">🗑️</button>
+              </form>
+            
+          </div>
+        </div>
+      
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div id="listView" style="display:none;">
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Table</th><th>Capacity</th><th>Location</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td data-label="Table"><strong></strong></td>
+              <td data-label="Capacity">👥 </td>
+              <td data-label="Location"></td>
+              <td data-label="Status"><span class="badge "></span></td>
+              <td data-label="Actions">
+                <div class="d-flex gap-1">
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="action" value="change_status">
+                    <input type="hidden" name="table_id" value="">
+                    <select name="new_status" class="form-control" style="padding:4px 8px; font-size:0.8rem; width:auto;">
+                      <option value="available" >Available</option>
+                      <option value="occupied"  >Occupied</option>
+                      <option value="reserved"  >Reserved</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm">Update</button>
+                  </form>
+                  
+                    <button class="btn btn-outline btn-sm" onclick="editTable()">✏️</button>
+                  
+                </div>
+              </td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.main-content -->
+
+<!-- Add/Edit Table Modal -->
+<div class="modal-overlay" id="tableModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="tableModalTitle">➕ Add Table</h3>
+      <button class="modal-close" onclick="closeModal('tableModal')">✕</button>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="save_table">
+      <input type="hidden" name="table_id" id="tableId" value="0">
+      <div class="modal-body">
+        <div class="grid grid-2" style="gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Table Number *</label>
+            <input type="text" name="table_number" id="tableNumber" class="form-control" placeholder="e.g. T09" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Capacity</label>
+            <input type="number" name="capacity" id="tableCapacity" class="form-control" value="4" min="1" max="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" name="location" id="tableLocation" class="form-control" placeholder="e.g. Main Hall">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select name="status" id="tableStatus" class="form-control">
+              <option value="available">🟢 Available</option>
+              <option value="occupied">🔴 Occupied</option>
+              <option value="reserved">🟡 Reserved</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('tableModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Save Table</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openTableModal() {
+  document.getElementById('tableModalTitle').textContent='➕ Add Table';
+  document.getElementById('tableId').value=0;
+  document.getElementById('tableNumber').value='';
+  document.getElementById('tableCapacity').value='4';
+  document.getElementById('tableLocation').value='';
+  document.getElementById('tableStatus').value='available';
+  document.getElementById('tableModal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function editTable(t) {
+  document.getElementById('tableModalTitle').textContent = '✏️ Edit Table';
+  document.getElementById('tableId').value = t.id;
+  document.getElementById('tableNumber').value = t.table_number;
+  document.getElementById('tableCapacity').value = t.capacity;
+  document.getElementById('tableLocation').value = t.location || '';
+  document.getElementById('tableStatus').value = t.status;
+  document.getElementById('tableModal').classList.add('open');
+}
+function setView(v) {
+  document.getElementById('gridView').style.display = v==='grid'?'block':'none';
+  document.getElementById('listView').style.display = v==='list'?'block':'none';
+  document.getElementById('gridViewBtn').classList.toggle('active', v==='grid');
+  document.getElementById('listViewBtn').classList.toggle('active', v==='list');
+}
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+</script>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>

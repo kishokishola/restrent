@@ -1,0 +1,85 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Debug</title>
+  <style>
+    body{font-family:monospace;background:#0f0f1a;color:#f0f0f0;padding:24px;}
+    h2{color:#e8a838;} h3{color:#9090b0;margin:18px 0 8px;}
+    table{border-collapse:collapse;width:100%;margin-bottom:20px;}
+    th,td{border:1px solid #2e2e4e;padding:8px 12px;text-align:left;font-size:.83rem;}
+    th{background:#252540;color:#e8a838;}
+    .ok{color:#28a745;} .warn{color:#ffc107;} .err{color:#dc3545;}
+    .box{background:rgba(232,168,56,.07);border-left:4px solid #e8a838;padding:14px 18px;border-radius:8px;margin-bottom:16px;}
+  </style>
+</head>
+<body>
+  <h2>🔧 Menu Debug</h2>
+
+  <div class="box">
+    <strong>Columns in menu_items:</strong><br>
+    
+  </div>
+
+  
+    <div class="box" style="border-color:#dc3545;">
+      ❌ <strong>available_times column MISSING!</strong><br>
+      Visit <a href="./menu.html" style="color:#e8a838;">menu.php</a> first to auto-create it.
+    </div>
+  
+
+  <h3>Recent menu_items (latest 20):</h3>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Cat ID</th><th>available_times</th><th>time_start</th><th>time_end</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          
+          
+            <span class="warn"></span>
+          
+            <span class="ok"></span>
+          
+        </td>
+        <td></td>
+        <td></td>
+        <td class=""></td>
+      </tr>
+      
+    </tbody>
+  </table>
+
+  <div class="box">
+    <strong>Categories:</strong><br>
+    
+      [] <br>
+    
+  </div>
+
+  <div class="box" style="border-color:#dc3545;color:#ffc107;">
+    ⚠️ Delete this file after debugging!<br>
+    <a href="./menu.html" style="color:#e8a838;">→ Go to Menu Management</a>
+  </div>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>

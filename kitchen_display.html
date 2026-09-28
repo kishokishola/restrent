@@ -1,0 +1,299 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>kitchen_display — Static demo</title></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Kitchen Display — ServePoint</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    /* ── Kitchen board layout ── */
+    .kb-board{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      align-items:start;
+    }
+    @media(max-width:900px){.kb-board{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:560px){.kb-board{grid-template-columns:1fr;}}
+
+    /* Column */
+    .kb-col{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .kb-col-head{
+      padding:14px 18px;font-weight:800;font-size:.92rem;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .kb-col.pending   .kb-col-head{border-top:3px solid var(--warning);}
+    .kb-col.preparing .kb-col-head{border-top:3px solid var(--info);}
+    .kb-col.ready     .kb-col-head{border-top:3px solid var(--success);}
+
+    /* Order card */
+    .kb-card{
+      margin:10px;background:var(--bg-card2);
+      border:1px solid var(--border);border-radius:var(--radius-sm);
+      padding:14px;border-left:4px solid var(--primary);
+      transition:var(--transition);
+    }
+    .kb-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+    .kb-card.urgent{border-left-color:var(--danger);}
+    .kb-card.ready-card{border-left-color:var(--success);}
+
+    .kb-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .kb-ord-num{font-size:.9rem;font-weight:800;color:var(--primary);}
+    .kb-tbl{font-size:.75rem;color:var(--text-muted);margin-bottom:6px;}
+
+    /* Timer */
+    @keyframes urgentPulse{0%,100%{background:rgba(220,53,69,.15)}50%{background:rgba(220,53,69,.3)}}
+    .kb-timer{
+      font-size:.72rem;font-weight:800;padding:3px 9px;border-radius:10px;
+    }
+    .kb-timer.ok{background:rgba(40,167,69,.15);color:var(--success);}
+    .kb-timer.warn{background:rgba(255,193,7,.15);color:var(--warning);}
+    .kb-timer.urgent{background:rgba(220,53,69,.15);color:var(--danger);animation:urgentPulse 1.2s ease infinite;}
+
+    /* Item list */
+    .kb-items{margin:8px 0;padding-left:0;list-style:none;}
+    .kb-item{
+      display:flex;align-items:center;gap:8px;
+      font-size:.83rem;color:var(--text-muted);
+      padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .kb-item:last-child{border-bottom:none;}
+    .kb-item-qty{
+      min-width:26px;height:26px;border-radius:50%;
+      background:var(--bg-dark);color:var(--primary);
+      font-weight:800;font-size:.78rem;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+    }
+    .kb-item-name{flex:1;font-weight:600;color:var(--text-main);}
+
+    /* Notes */
+    .kb-note{font-size:.75rem;color:var(--warning);margin-top:6px;padding:5px 8px;background:rgba(255,193,7,.08);border-radius:5px;}
+
+    /* Action buttons */
+    .kb-btns{display:flex;gap:6px;margin-top:10px;}
+
+    /* Stats bar */
+    .kb-stats{
+      display:flex;gap:16px;flex-wrap:wrap;
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--radius-sm);padding:14px 20px;
+      margin-bottom:20px;
+    }
+    .kb-stat{display:flex;align-items:center;gap:8px;}
+    .kb-stat-val{font-size:1.5rem;font-weight:800;}
+    .kb-stat-lbl{font-size:.75rem;color:var(--text-muted);}
+
+    /* Auto-refresh indicator */
+    .refresh-bar{
+      height:3px;background:var(--border);border-radius:3px;
+      overflow:hidden;margin-bottom:16px;
+    }
+    .refresh-progress{
+      height:100%;background:var(--primary);border-radius:3px;
+      animation:refill 30s linear infinite;
+    }
+    @keyframes refill{from{width:100%}to{width:0%}}
+
+    .empty-col{padding:30px;text-align:center;color:var(--text-muted);font-size:.85rem;}
+  </style>
+</head>
+<body class="pos-bg">
+
+
+<div class="main-content">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">👨‍🍳 <span>Kitchen</span> Display</h1>
+      <p class="page-subtitle">Live order board — </p>
+    </div>
+    <div class="d-flex gap-2 align-center">
+      <span class="badge badge-warning">⏳  New</span>
+      <span class="badge badge-info">🔥  Cooking</span>
+      <span class="badge badge-success">✅  Ready</span>
+      <button class="btn btn-ghost btn-sm" onclick="location.reload()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <!-- Auto-refresh bar (30s) -->
+  <div class="refresh-bar"><div class="refresh-progress"></div></div>
+
+  <!-- Stats -->
+  <div class="kb-stats">
+    <div class="kb-stat">
+      <span class="kb-stat-val" style="color:var(--warning);"></span>
+      <div><div class="kb-stat-lbl">New Orders</div></div>
+    </div>
+    <div class="kb-stat">
+      <span class="kb-stat-val" style="color:var(--info);"></span>
+      <div><div class="kb-stat-lbl">Preparing</div></div>
+    </div>
+    <div class="kb-stat">
+      <span class="kb-stat-val" style="color:var(--success);"></span>
+      <div><div class="kb-stat-lbl">Ready to Serve</div></div>
+    </div>
+    <div class="kb-stat" style="margin-left:auto;">
+      <label class="form-check" style="cursor:pointer;">
+        <input type="checkbox" id="autoRef" onchange="toggleAuto(this)"> Auto-refresh (30s)
+      </label>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="kb-board">
+
+    <!-- NEW ORDERS -->
+    <div class="kb-col pending">
+      <div class="kb-col-head">
+        <span>🟡 New Orders</span>
+        <span class="badge badge-warning"></span>
+      </div>
+      
+        <div class="empty-col">📭 No new orders</div>
+      
+        
+        <div class="kb-card ">
+          <div class="kb-card-top">
+            <span class="kb-ord-num"></span>
+            <span class="kb-timer ">⏱ m</span>
+          </div>
+          <div class="kb-tbl">🪑 </div>
+          <ul class="kb-items">
+            
+              <li class="kb-item">
+                <span class="kb-item-qty"></span>
+                <span class="kb-item-name"></span>
+              </li>
+            
+          </ul>
+          
+            <div class="kb-note">📝 </div>
+          
+          <div class="kb-btns">
+            <form method="POST" style="flex:1;">
+              <input type="hidden" name="order_id" value="">
+              <input type="hidden" name="new_status" value="preparing">
+              <button class="btn btn-info btn-sm btn-block">🔥 Start Cooking</button>
+            </form>
+          </div>
+        </div>
+        
+      
+    </div>
+
+    <!-- PREPARING -->
+    <div class="kb-col preparing">
+      <div class="kb-col-head">
+        <span>🔥 Preparing</span>
+        <span class="badge badge-info"></span>
+      </div>
+      
+        <div class="empty-col">🍳 Nothing cooking</div>
+      
+        
+        <div class="kb-card">
+          <div class="kb-card-top">
+            <span class="kb-ord-num"></span>
+            <span class="kb-timer ">⏱ m</span>
+          </div>
+          <div class="kb-tbl">🪑 </div>
+          <ul class="kb-items">
+            
+              <li class="kb-item">
+                <span class="kb-item-qty"></span>
+                <span class="kb-item-name"></span>
+              </li>
+            
+          </ul>
+          
+            <div class="kb-note">📝 </div>
+          
+          <div class="kb-btns">
+            <form method="POST" style="flex:1;">
+              <input type="hidden" name="order_id" value="">
+              <input type="hidden" name="new_status" value="ready">
+              <button class="btn btn-success btn-sm btn-block">✅ Mark Ready</button>
+            </form>
+            <form method="POST">
+              <input type="hidden" name="order_id" value="">
+              <input type="hidden" name="new_status" value="pending">
+              <button class="btn btn-ghost btn-sm" title="Back to New">↩</button>
+            </form>
+          </div>
+        </div>
+        
+      
+    </div>
+
+    <!-- READY -->
+    <div class="kb-col ready">
+      <div class="kb-col-head">
+        <span>✅ Ready to Serve</span>
+        <span class="badge badge-success"></span>
+      </div>
+      
+        <div class="empty-col">🍽️ Nothing ready yet</div>
+      
+        
+        <div class="kb-card ready-card">
+          <div class="kb-card-top">
+            <span class="kb-ord-num"></span>
+            <span class="badge badge-success" style="font-size:.68rem;">Ready!</span>
+          </div>
+          <div class="kb-tbl">🪑 </div>
+          <ul class="kb-items">
+            
+              <li class="kb-item">
+                <span class="kb-item-qty"></span>
+                <span class="kb-item-name"></span>
+              </li>
+            
+          </ul>
+          <div class="kb-btns">
+            <form method="POST" style="flex:1;">
+              <input type="hidden" name="order_id" value="">
+              <input type="hidden" name="new_status" value="completed">
+              <button class="btn btn-primary btn-sm btn-block">🏁 Complete & Serve</button>
+            </form>
+          </div>
+        </div>
+        
+      
+    </div>
+
+  </div><!-- /.kb-board -->
+</div>
+
+<script>
+let autoInterval = null;
+function toggleAuto(cb){
+  if (cb.checked) { autoInterval = setInterval(()=>location.reload(), 30000); }
+  else            { clearInterval(autoInterval); }
+}
+// Restore checkbox state
+window.addEventListener('load',()=>{
+  const cb = document.getElementById('autoRef');
+  if (localStorage.getItem('kbAutoRefresh')==='1') { cb.checked=true; toggleAuto(cb); }
+  cb.addEventListener('change',()=>localStorage.setItem('kbAutoRefresh', cb.checked?'1':'0'));
+});
+</script>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body>
+</html>
+<script>
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent || button.value; if ('value' in button) button.value = 'Demo mode'; else button.textContent = 'Demo mode'; }
+  window.alert('This is a static GitHub Pages demo. Saving data requires a backend.');
+}));
+</script></body></html>
